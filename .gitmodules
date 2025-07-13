@@ -8,11 +8,11 @@
 	branch = obi/krogoth
 [submodule "bitbake"]
 	path = bitbake
-	url = https://github.com/opendreambox/bitbake.git
+	url = https://github.com/dreamlegacy/bitbake.git
 	branch = krogoth
 [submodule "meta-qt5"]
 	path = meta-qt5
-	url = https://github.com/opendreambox/meta-qt5
+	url = https://github.com/dreamlegacy/meta-qt5
 	branch = krogoth
 [submodule "meta-golang"]
 	path = meta-golang
