@@ -8,7 +8,7 @@
 	branch = obi/krogoth
 [submodule "bitbake"]
 	path = bitbake
-	url = https://github.com/dreamlegacy/bitbake.git
+	url = git@github.com:dreamlegacy/bitbake.git
 	branch = krogoth
 [submodule "meta-qt5"]
 	path = meta-qt5
