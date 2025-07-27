@@ -4,7 +4,7 @@
 	branch = obi/krogoth
 [submodule "meta-openembedded"]
 	path = meta-openembedded
-	url = git://git.openembedded.org/meta-openembedded-contrib
+	url = git@github.com:dreamlegacy/meta-openembedded
 	branch = obi/krogoth
 [submodule "bitbake"]
 	path = bitbake
