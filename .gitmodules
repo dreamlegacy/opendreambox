@@ -1,6 +1,6 @@
 [submodule "openembedded-core"]
 	path = openembedded-core
-	url = gi@github.com:dreamlegacy/openembedded-core
+	url = git@github.com:dreamlegacy/openembedded-core
 	branch = obi/krogoth
 [submodule "meta-openembedded"]
 	path = meta-openembedded
