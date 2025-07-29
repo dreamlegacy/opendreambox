@@ -3,6 +3,7 @@ SECTION = "console/utils"
 LICENSE = "CLOSED"
 DEPENDS = "tpmd"
 SRCREV = "${@opendreambox_srcrev('87312149aceebfaa9ce69d7eaf4f71c57d37e77c', d)}"
+GITHUB_BRANCH = "master"
 
 inherit opendreambox-git
 
