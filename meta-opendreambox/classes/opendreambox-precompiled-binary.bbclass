@@ -2,7 +2,8 @@ LICENSE = "CLOSED"
 PRECOMPILED_NAME ?= "${PN}"
 PRECOMPILED_ARCH ?= "${PACKAGE_ARCH}"
 PRECOMPILED_VERSION ?= "${PV}"
-PRECOMPILED_URI ?= "http://dreamboxupdate.com/download/${DISTRO}/${DISTRO_VERSION}/${@precompiledPath(d)};name=${PRECOMPILED_ARCH}"
+#PRECOMPILED_URI ?= "https://dreamboxupdate.com/download/${DISTRO}/${DISTRO_VERSION}/${@precompiledPath(d)};name=${PRECOMPILED_ARCH}"
+PRECOMPILED_URI ?= "https://dreamlegacy.drecomx.net/${DISTRO}/${DISTRO_VERSION}/${@precompiledPath(d)};name=${PRECOMPILED_ARCH}"
 
 SRC_URI += "${PRECOMPILED_URI}"
 
@@ -33,3 +34,4 @@ INHIBIT_PACKAGE_STRIP = "1"
 INHIBIT_SYSROOT_STRIP = "1"
 
 INSANE_SKIP_${PN}_append = " already-stripped"
+
