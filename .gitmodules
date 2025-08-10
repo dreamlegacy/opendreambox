@@ -12,8 +12,8 @@
 	branch = krogoth
 [submodule "meta-qt5"]
 	path = meta-qt5
-	url = https://github.com/dreamlegacy/meta-qt5
-	branch = krogoth
+	url = git@github.com:dreamlegacy/meta-qt5
+	branch = obi/krogoth
 [submodule "meta-golang"]
 	path = meta-golang
 	url = https://github.com/madisongh/meta-golang
