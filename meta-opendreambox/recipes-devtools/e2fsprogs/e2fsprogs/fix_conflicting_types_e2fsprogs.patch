@@ -1,0 +1,177 @@
+diff --git a/misc/create_inode.c b/misc/create_inode.c
+--- a/misc/create_inode.c	2020-04-04 16:47:12.017169000 +0200
++++ a/misc/create_inode.c	2020-04-04 21:33:49.342822236 +0200
+@@ -18,10 +18,16 @@
+ #include <sys/types.h>
+ #include <unistd.h>
+ #include <limits.h> /* for PATH_MAX */
+-#ifdef HAVE_ATTR_XATTR_H
++#if defined HAVE_SYS_XATTR_H
++#include <sys/xattr.h>
++#elif defined HAVE_ATTR_XATTR_H
+ #include <attr/xattr.h>
+ #endif
+ #include <sys/ioctl.h>
++#ifdef HAVE_SYS_SYSMACROS_H
++#include <sys/sysmacros.h>
++#endif
++
+ #include <ext2fs/ext2fs.h>
+ #include <ext2fs/ext2_types.h>
+ #include <ext2fs/fiemap.h>
+@@ -29,7 +35,7 @@
+ #include "create_inode.h"
+ #include "support/nls-enable.h"
+ 
+-/* 64KiB is the minimium blksize to best minimize system call overhead. */
++/* 64KiB is the minimum blksize to best minimize system call overhead. */
+ #define COPY_FILE_BUFLEN	65536
+ 
+ static int ext2_file_type(unsigned int mode)
+@@ -392,7 +398,7 @@
+ }
+ #endif /* !defined HAVE_PREAD64 && !defined HAVE_PREAD */
+ 
+-static errcode_t copy_file_range(ext2_filsys fs, int fd, ext2_file_t e2_file,
++static errcode_t copy_file_chunk(ext2_filsys fs, int fd, ext2_file_t e2_file,
+ 				 off_t start, off_t end, char *buf,
+ 				 char *zerobuf)
+ {
+@@ -444,13 +450,13 @@
+ 	return err;
+ }
+ 
++#if defined(SEEK_DATA) && defined(SEEK_HOLE)
+ static errcode_t try_lseek_copy(ext2_filsys fs, int fd, struct stat *statbuf,
+ 				ext2_file_t e2_file, char *buf, char *zerobuf)
+ {
+-#if defined(SEEK_DATA) && defined(SEEK_HOLE)
+ 	off_t data = 0, hole;
+ 	off_t data_blk, hole_blk;
+-	errcode_t err;
++	errcode_t err = 0;
+ 
+ 	/* Try to use SEEK_DATA and SEEK_HOLE */
+ 	while (data < statbuf->st_size) {
+@@ -466,7 +472,7 @@
+ 
+ 		data_blk = data & ~(fs->blocksize - 1);
+ 		hole_blk = (hole + (fs->blocksize - 1)) & ~(fs->blocksize - 1);
+-		err = copy_file_range(fs, fd, e2_file, data_blk, hole_blk, buf,
++		err = copy_file_chunk(fs, fd, e2_file, data_blk, hole_blk, buf,
+ 				      zerobuf);
+ 		if (err)
+ 			return err;
+@@ -475,15 +481,13 @@
+ 	}
+ 
+ 	return err;
+-#else
+-	return EXT2_ET_UNIMPLEMENTED;
+-#endif /* SEEK_DATA and SEEK_HOLE */
+ }
++#endif /* SEEK_DATA and SEEK_HOLE */
+ 
++#if defined(FS_IOC_FIEMAP)
+ static errcode_t try_fiemap_copy(ext2_filsys fs, int fd, ext2_file_t e2_file,
+ 				 char *buf, char *zerobuf)
+ {
+-#if defined(FS_IOC_FIEMAP)
+ #define EXTENT_MAX_COUNT 512
+ 	struct fiemap *fiemap_buf;
+ 	struct fiemap_extent *ext_buf, *ext;
+@@ -512,13 +516,14 @@
+ 		if (err < 0 && (errno == EOPNOTSUPP || errno == ENOTTY)) {
+ 			err = EXT2_ET_UNIMPLEMENTED;
+ 			goto out;
+-		} else if (err < 0 || fiemap_buf->fm_mapped_extents == 0) {
++		} else if (err < 0) {
+ 			err = errno;
+ 			goto out;
+-		}
++		} else if (fiemap_buf->fm_mapped_extents == 0)
++			goto out;
+ 		for (i = 0, ext = ext_buf; i < fiemap_buf->fm_mapped_extents;
+ 		     i++, ext++) {
+-			err = copy_file_range(fs, fd, e2_file, ext->fe_logical,
++			err = copy_file_chunk(fs, fd, e2_file, ext->fe_logical,
+ 					      ext->fe_logical + ext->fe_length,
+ 					      buf, zerobuf);
+ 			if (err)
+@@ -537,10 +542,8 @@
+ out:
+ 	ext2fs_free_mem(&fiemap_buf);
+ 	return err;
+-#else
+-	return EXT2_ET_UNIMPLEMENTED;
+-#endif /* FS_IOC_FIEMAP */
+ }
++#endif /* FS_IOC_FIEMAP */
+ 
+ static errcode_t copy_file(ext2_filsys fs, int fd, struct stat *statbuf,
+ 			   ext2_ino_t ino)
+@@ -561,15 +564,19 @@
+ 	if (err)
+ 		goto out;
+ 
++#if defined(SEEK_DATA) && defined(SEEK_HOLE)
+ 	err = try_lseek_copy(fs, fd, statbuf, e2_file, buf, zerobuf);
+ 	if (err != EXT2_ET_UNIMPLEMENTED)
+ 		goto out;
++#endif
+ 
++#if defined(FS_IOC_FIEMAP)
+ 	err = try_fiemap_copy(fs, fd, e2_file, buf, zerobuf);
+ 	if (err != EXT2_ET_UNIMPLEMENTED)
+ 		goto out;
++#endif
+ 
+-	err = copy_file_range(fs, fd, e2_file, 0, statbuf->st_size, buf,
++	err = copy_file_chunk(fs, fd, e2_file, 0, statbuf->st_size, buf,
+ 			      zerobuf);
+ out:
+ 	ext2fs_free_mem(&zerobuf);
+@@ -687,7 +694,7 @@
+ 	DIR		*dh;
+ 	struct dirent	*dent;
+ 	struct stat	st;
+-	char		ln_target[PATH_MAX];
++	char		*ln_target = NULL;
+ 	unsigned int	save_inode;
+ 	ext2_ino_t	ino;
+ 	errcode_t	retval = 0;
+@@ -754,18 +761,33 @@
+ 			}
+ 			break;
+ 		case S_IFLNK:
++			ln_target = malloc(st.st_size + 1);
++			if (ln_target == NULL) {
++				com_err(__func__, retval,
++					_("malloc failed"));
++				goto out;
++			}
+ 			read_cnt = readlink(name, ln_target,
+-					    sizeof(ln_target) - 1);
++					    st.st_size + 1);
+ 			if (read_cnt == -1) {
+ 				retval = errno;
+ 				com_err(__func__, retval,
+ 					_("while trying to read link \"%s\""),
+ 					name);
++				free(ln_target);
++				goto out;
++			}
++			if (read_cnt > st.st_size) {
++				com_err(__func__, retval,
++					_("symlink increased in size "
++					  "between lstat() and readlink()"));
++				free(ln_target);
+ 				goto out;
+ 			}
+ 			ln_target[read_cnt] = '\0';
+ 			retval = do_symlink_internal(fs, parent_ino, name,
+ 						     ln_target, root);
++			free(ln_target);
+ 			if (retval) {
+ 				com_err(__func__, retval,
+ 					_("while writing symlink\"%s\""),
