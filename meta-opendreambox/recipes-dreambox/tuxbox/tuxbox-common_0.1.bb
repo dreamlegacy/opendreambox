@@ -14,4 +14,5 @@ do_install() {
 
 FILES_${PN} = "${sysconfdir}"
 
-OPENDREAMBOX_PROJECT = "obi/enigma2-xml-data"
+GITHUB_PROJECT = "enigma2-xml-data"
+GITHUB_BRANCH = "master"
