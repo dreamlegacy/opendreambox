@@ -1,18 +1,18 @@
 [submodule "openembedded-core"]
 	path = openembedded-core
-	url = git://git.openembedded.org/openembedded-core-contrib
+	url = git@github.com:dreamlegacy/openembedded-core
 	branch = obi/pyro
 [submodule "meta-openembedded"]
 	path = meta-openembedded
-	url = git://git.openembedded.org/meta-openembedded-contrib
+	url = git@github.com:dreamlegacy/meta-openembedded
 	branch = obi/pyro
 [submodule "bitbake"]
 	path = bitbake
-	url = https://github.com/opendreambox/bitbake.git
+	url = git@github.com:dreamlegacy/bitbake.git
 	branch = pyro
 [submodule "meta-qt5"]
 	path = meta-qt5
-	url = https://github.com/opendreambox/meta-qt5
+	url = git@github.com:dreamlegacy/meta-qt5
 	branch = sumo
 [submodule "meta-golang"]
 	path = meta-golang
