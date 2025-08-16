@@ -3,6 +3,7 @@ LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=8f242b441da515e30c7b07f2cc6f4d5c"
 
 SRCREV = "${@opendreambox_srcrev('6072e2174619712a41f46ea007acf65fd0e86e48', d)}"
+GITHUB_BRANCH = "master"
 
 inherit opendreambox-git
 

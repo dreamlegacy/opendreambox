@@ -3,6 +3,7 @@ SECTION = "base"
 LICENSE = "CLOSED"
 DEPENDS = "libdlsym"
 SRCREV = "${@opendreambox_srcrev('6e7b3136e17c28697b3dcea597a334022a931b27', d)}"
+GITHUB_BRANCH = "master"
 
 inherit autotools opendreambox-git pkgconfig
 
